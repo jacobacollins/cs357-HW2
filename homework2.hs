@@ -2,7 +2,7 @@
 
 Jacob Collins
 
-
+101693075
 
 -}
 
@@ -43,7 +43,7 @@ select p (x:xs) (y:ys) = if p x then y: select p xs ys else select p xs ys
 --2.4
 prefixSum :: [Int] -> [Int]
 prefixSum [] = []
-prefixSum (x:xs) = scanl1 (+) (x:xs)
+prefixSum (x:xs) =  prefixSum (init(x:xs))  ++ [sum  $ reverse(x:xs)]
 
 --2.5
 
