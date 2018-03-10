@@ -18,7 +18,7 @@ import Data.List
 
 collatz :: [Int] ->  Int
 collatz [] = 0
-collatz x = clength( map compute x )
+collatz x = clength(map compute x)
    
 
 
@@ -66,6 +66,7 @@ example = (10, [1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0])
 --2.6 1
 
 makeLongInt :: Integer -> Int -> Numeral
+makeLongInt x 0 = (0, [])
 makeLongInt x y = (y,doMath x y)
     where doMath x y 
             | fromInteger(x) `div` y == 0 = fromInteger(x) `mod` y :[]
@@ -75,7 +76,8 @@ makeLongInt x y = (y,doMath x y)
 --2.6 2
 
 evaluateLongInt :: Numeral -> Integer
-
+evaluateLongInt (0, _) = 0
+evaluateLongInt (_, []) = 0
 evaluateLongInt (x , (y:ys)) = toInteger(foldl (\x y -> 10*x+y) 0 (doMath q $ x))
     where
      q = foldl (\x y -> 10*x+y) 0 (y:ys)
@@ -88,16 +90,16 @@ evaluateLongInt (x , (y:ys)) = toInteger(foldl (\x y -> 10*x+y) 0 (doMath q $ x)
 --2.6 3
 
 changeRadixLongInt ::  Numeral -> Int -> Numeral
-changeRadixLongInt n radix = (radix, unfold convertNumber n)
+changeRadixLongInt (n, []) radix = (radix, [])
+changeRadixLongInt (n,l) radix = (radix, unfoldNumeral convertNumber (n,l))
   where  convertNumber(_,[]) = (Nothing)
          convertNumber x = Just (changeBaseMath x radix)
-         unfold f = reverse . unfoldr (fmap switch . f)
+         unfoldNumeral n = reverse . unfoldr (fmap switch . n)
             where switch (x,y) =   (y,x)
 
 --2.6 4
 
 addLongInts :: Numeral -> Numeral -> Numeral
-
 addLongInts (x1, y1) (x2, y2)
 
     | length y1 > length y2 && x1 > x2 = doMath (x1, y1)(x2, checkLength (length(y1)) (changeBase y2 x2 x1))
@@ -138,10 +140,6 @@ mulLongInts (x1, y1) (x2, y2)
 
 
 -- helper functions
-
-
-
-
 compute :: Int -> [Int]
 compute 1 =  1: []
 compute n 
@@ -156,11 +154,11 @@ clength xss =head $ snd $ maximum $ [(length xs, xs) | xs <- xss]
 
 changeBaseMath ::  Numeral -> Int -> (Numeral,Int)
 changeBaseMath (r,(x:xs)) y  =   
-    let  div c d = switch ((c*r+d) `divMod` y)
+    let  div carry d = switch ((carry*r+d) `divMod` y)
          (carry, keep) = mapAccumR div 0 (reverse (x:xs))
     in   (removeZeros(r,reverse keep), carry)
         where 
-            removeZeros (r,ds) = (r, dropWhile (==0) ds)
+            removeZeros (r,d) = (r, dropWhile (==0) d)
             switch (x,y) = (y,x)
 
 changeBase :: [Int] -> Int -> Int -> [Int]
@@ -182,3 +180,8 @@ checkLength size list
 
 multiplyDigits ::  [Int] -> [Int] -> [Int]
 multiplyDigits = undefined
+    
+    where
+    doMath x y
+        | x >= 1        = y + doMath (x-1) y
+        | otherwise     = 0
